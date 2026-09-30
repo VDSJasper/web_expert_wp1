@@ -24,6 +24,27 @@ app.use(express.json());
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "pug");
 
+function getOwnersFor(record) {
+  const ownerIds = record.ownerIds || [];
+  const owners = config.persons || [];
+
+  return ownerIds
+    .map(ownerId => owners.find(owner => owner.id === ownerId))
+    .filter(Boolean);
+}
+
+function getPetsWithOwners() {
+  const pets = config.pets || [];
+  const ownersById = new Map((config.persons || []).map(o => [o.id, o]));
+
+  return pets.map(pet => ({
+    ...pet,
+    owners: (pet.ownerIds || [])
+      .map(id => ownersById.get(id))
+      .filter(Boolean)
+  }));
+}
+
 function checkRoute(req, res, next) {
   const route = req.params.route;
 
@@ -48,7 +69,14 @@ app.get('/:route', checkRoute, (req, res) => {
   const route = req.params.route;
   const data = config[route] || [];
 
+  const embedOwners = req.query.embed === 'owners';
+
+  if (embedOwners) {
+    return res.json(getPetsWithOwners());
+  }
+    
   res.json(data);
+
 });
 
 app.get('/:route/:id', checkRoute, (req, res) => {
@@ -62,6 +90,12 @@ app.get('/:route/:id', checkRoute, (req, res) => {
     return res.status(404).json({
       error: `Record with ID ${id} not found in ${route}`
     });
+  }
+
+  const embedOwners = req.query.embed === 'owners';
+
+  if (embedOwners) {
+    return res.json({ ...record, owners: getOwnersFor(record) });
   }
 
   res.json(record);
