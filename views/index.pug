@@ -1,0 +1,22 @@
+doctype html
+html
+    head
+        title My Pug Page
+    body
+        h1 #{title}
+
+        a(href="/persons") Persons
+        ul
+            each person in persons
+                li: a(href=`/persons/${person.id}`)= person.name
+
+        a(href="/pets") Pets
+        ul
+            each pet in pets
+                li: a(href=`/pets/${pet.id}`)= pet.name
+
+        a(href="/pets?embed=owners") Pets with owners embedded
+            ul
+                each pet in pets
+                    li
+                        a(href=`/pets/${pet.id}?embed=owners`)= pet.name
