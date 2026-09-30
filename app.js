@@ -21,6 +21,9 @@ try {
 
 app.use(express.json());
 
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "pug");
+
 function checkRoute(req, res, next) {
   const route = req.params.route;
 
@@ -34,7 +37,11 @@ function checkRoute(req, res, next) {
 }
 
 app.get('/', (req, res) => {
-  res.send(`Configured routes: ${config.routes}`);
+  res.render("index", {
+    title: "Persons and pets",
+    persons: config.persons,
+    pets: config.pets,
+  })
 });
 
 app.get('/:route', checkRoute, (req, res) => {
