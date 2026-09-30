@@ -1,49 +1,45 @@
+// app.js
 const express = require('express');
-const yaml = require('js-yaml');
-const fs = require('fs');
-const path = require('path');
+const { saveConfig } = require('./config');
+const petsRouter = require('./routes/pets');
 
 const app = express();
-const PORT = 3000;
+app.use(express.json());
+app.use('/pets', petsRouter);
 
-const CONFIG = process.argv.slice(2)[0] || 'config.yaml';
+const server = app.listen(3000, () => console.log('Listening on port 3000'));
 
-let config;
+let shuttingDown = false;
 
-try {
-  config = yaml.load(
-    fs.readFileSync(path.join(__dirname, CONFIG), 'utf8')
-  );
-} catch (error) {
-  console.error('Error reading or parsing config:', error);
-  process.exit(1);
+function finish(code) {
+  try {
+    saveConfig();
+    console.log('Config saved');
+  } catch (err) {
+    console.error('Failed to save config:', err);
+    code = 1;
+  }
+  process.exit(code);
 }
 
+function shutdown(signal) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  console.log(`${signal} received, shutting down...`);
+
+  server.close(() => finish(0));
+
+  setTimeout(() => finish(1), 5000).unref();
+}
+
+process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('SIGTERM', () => shutdown('SIGTERM'));
 app.use(express.json());
 
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "pug");
 
-function getOwnersFor(record) {
-  const ownerIds = record.ownerIds || [];
-  const owners = config.persons || [];
 
-  return ownerIds
-    .map(ownerId => owners.find(owner => owner.id === ownerId))
-    .filter(Boolean);
-}
-
-function getPetsWithOwners() {
-  const pets = config.pets || [];
-  const ownersById = new Map((config.persons || []).map(o => [o.id, o]));
-
-  return pets.map(pet => ({
-    ...pet,
-    owners: (pet.ownerIds || [])
-      .map(id => ownersById.get(id))
-      .filter(Boolean)
-  }));
-}
 
 function checkRoute(req, res, next) {
   const route = req.params.route;
@@ -100,37 +96,6 @@ app.get('/:route/:id', checkRoute, (req, res) => {
 
   res.json(record);
 });
-
-app.post('/:route', (req, res) => {
-  const { name, type, ownerIds = [] } = req.body || {};
-
-  if (!name || !species) {
-    return res.status(400).json({ error: 'name and type are required' });
-  }
-
-  const newPet = {
-    id: crypto.randomUUID(),
-    name,
-    type,
-    ownerIds
-  };
-
-  config.pets.push(newPet);
-
-  res.status(201).json(newPet);
-});
-
-const server = app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
-}).on('error', (err) => {
-  console.error('Server failed to start:', err);
-  process.exit(1);
-});
-
-const shutdown = () => {
-  console.log('Shutting down...');
-  server.close(() => process.exit(0));
-};
 
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
