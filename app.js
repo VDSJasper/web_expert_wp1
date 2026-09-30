@@ -101,6 +101,25 @@ app.get('/:route/:id', checkRoute, (req, res) => {
   res.json(record);
 });
 
+app.post('/:route', (req, res) => {
+  const { name, type, ownerIds = [] } = req.body || {};
+
+  if (!name || !species) {
+    return res.status(400).json({ error: 'name and type are required' });
+  }
+
+  const newPet = {
+    id: crypto.randomUUID(),
+    name,
+    type,
+    ownerIds
+  };
+
+  config.pets.push(newPet);
+
+  res.status(201).json(newPet);
+});
+
 const server = app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 }).on('error', (err) => {
