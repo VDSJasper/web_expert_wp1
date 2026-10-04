@@ -10,3 +10,8 @@ html
             ul
                 each route in routes[i]
                     li: a(href=`/${routeName}/${route.id}`)= route.name
+            if relationships[routeName]
+                a(href=`/${routeName}/?embed=owners`) #{routeName} with embedding
+                ul
+                    each route in routes[i]
+                        li: a(href=`/${routeName}/${route.id}?embed=owners`)= route.name

@@ -50,7 +50,6 @@ function checkRoute(req, res, next) {
       error: `Route ${route} not found`
     });
   }
-
   next();
 }
 
@@ -63,15 +62,12 @@ app.get('/', (req, res) => {
     allRouteNames.push(route);
   }
 
-
   res.render("index", {
-    title: "Persons and pets",
+    title: `${allRouteNames[0]} and ${allRouteNames[1]}`,
     routeNames: allRouteNames,
     routes: allRoutes,
+    relationships: config.relationships,
   })
-    console.log(allRoutes[0]);
-    console.log(allRouteNames);
-
 });
 
 app.get('/:route', checkRoute, (req, res) => {
@@ -93,7 +89,9 @@ app.get('/:route/:id', checkRoute, (req, res) => {
   const id = req.params.id;
   const data = config[route] || [];
 
-  const record = data.find(item => item.id === id);
+  const record = data.find(item => String(item.id) === String(id));
+
+  console.log(record);
 
   if (!record) {
     return res.status(404).json({
