@@ -1,7 +1,8 @@
-// app.js
 const express = require('express');
-const { saveConfig } = require('./config');
+const { saveConfig, config } = require('./config');
 const petsRouter = require('./routes/pets');
+const { getOwnersFor, getPetsWithOwners } = require('./lib/owners');
+const {join} = require("node:path");
 
 const app = express();
 app.use(express.json());
@@ -36,7 +37,7 @@ process.on('SIGINT', () => shutdown('SIGINT'));
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 app.use(express.json());
 
-app.set("views", path.join(__dirname, "views"));
+app.set("views", join(__dirname, "views"));
 app.set("view engine", "pug");
 
 
@@ -54,11 +55,23 @@ function checkRoute(req, res, next) {
 }
 
 app.get('/', (req, res) => {
+  const allRoutes = [];
+  const allRouteNames = [];
+
+  for (let route of config.routes) {
+    allRoutes.push(config[route]);
+    allRouteNames.push(route);
+  }
+
+
   res.render("index", {
     title: "Persons and pets",
-    persons: config.persons,
-    pets: config.pets,
+    routeNames: allRouteNames,
+    routes: allRoutes,
   })
+    console.log(allRoutes[0]);
+    console.log(allRouteNames);
+
 });
 
 app.get('/:route', checkRoute, (req, res) => {
@@ -80,7 +93,7 @@ app.get('/:route/:id', checkRoute, (req, res) => {
   const id = req.params.id;
   const data = config[route] || [];
 
-  const record = data.find(item => item.id == id);
+  const record = data.find(item => item.id === id);
 
   if (!record) {
     return res.status(404).json({

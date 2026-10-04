@@ -1,22 +1,12 @@
 doctype html
 html
     head
-        title My Pug Page
+        title wp1
     body
         h1 #{title}
 
-        a(href="/persons") Persons
-        ul
-            each person in persons
-                li: a(href=`/persons/${person.id}`)= person.name
-
-        a(href="/pets") Pets
-        ul
-            each pet in pets
-                li: a(href=`/pets/${pet.id}`)= pet.name
-
-        a(href="/pets?embed=owners") Pets with owners embedded
+        each routeName, i in routeNames
+            a(href=`/${routeName}`) #{routeName}
             ul
-                each pet in pets
-                    li
-                        a(href=`/pets/${pet.id}?embed=owners`)= pet.name
+                each route in routes[i]
+                    li: a(href=`/${routeName}/${route.id}`)= route.name
