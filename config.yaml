@@ -24,3 +24,8 @@ pets:
     ownerIds:
       - 1
       - 2
+  - id: 3601faa9-733b-4067-97e1-787266375881
+    name: Freddy
+    type: vis
+    ownerIds:
+      - 1
