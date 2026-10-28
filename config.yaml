@@ -6,26 +6,26 @@ relationships:
     - relatedRoute: persons
       foreignKey: ownerIds
 persons:
-  - id: 1
+  - id: f97b17c3-2a0e-4be4-870a-313169bddf4a
     name: Jan
-  - id: 2
+  - id: bf229cb9-3f86-4e09-b1be-84d62ba9c401
     name: Sofie
-  - id: 3
+  - id: db5ff7c6-2c85-4647-ad6e-badbb9efff60
     name: Tim
 pets:
-  - id: 1
+  - id: fbc494eb-d386-44bb-9931-e2db1beae762
     type: dog
     name: Jimmy
     ownerIds:
-      - 2
-  - id: 2
+      - bf229cb9-3f86-4e09-b1be-84d62ba9c401
+  - id: 0c2a1fa5-021e-4583-94b3-f9669d5d5220
     type: cat
     name: Duvel
     ownerIds:
-      - 1
-      - 2
+      - f97b17c3-2a0e-4be4-870a-313169bddf4a
+      - bf229cb9-3f86-4e09-b1be-84d62ba9c401
   - id: 3601faa9-733b-4067-97e1-787266375881
     name: Freddy
     type: vis
     ownerIds:
-      - 1
+      - f97b17c3-2a0e-4be4-870a-313169bddf4a
