@@ -2,13 +2,13 @@
 const express = require('express');
 const crypto = require('crypto');
 const { config } = require('../config');
-const { petservice } = require('../lib/pets')
+const { findPetIndex, validatePet } = require('../lib/pets')
 
 const router = express.Router();
 
 
 router.post('/', (req, res) => {
-    const { error, value } = petservice.validatePet(req.body);
+    const { error, value } = validatePet(req.body);
     if (error) {
         return res.status(400).json({ error });
     }
@@ -21,7 +21,7 @@ router.post('/', (req, res) => {
 
 router.put('/:id', (req, res) => {
     const { id } = req.params;
-    const index = petservice.findPetIndex(id);
+    const index = findPetIndex(id);
 
     if (index === -1) {
         return res.status(404).json({ error: `Pet with ID ${id} not found` });
@@ -31,7 +31,7 @@ router.put('/:id', (req, res) => {
         return res.status(400).json({ error: 'ID in body does not match ID in URL' });
     }
 
-    const { error, value } = petservice.validatePet(req.body);
+    const { error, value } = validatePet(req.body);
     if (error) {
         return res.status(400).json({ error });
     }
@@ -44,7 +44,7 @@ router.put('/:id', (req, res) => {
 
 router.delete('/:id', (req, res) => {
     const { id } = req.params;
-    const index = petservice.findPetIndex(id);
+    const index = findPetIndex(id);
 
     if (index === -1) {
         return res.status(404).json({ error: `Pet with ID ${id} not found` });
