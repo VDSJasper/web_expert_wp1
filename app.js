@@ -8,38 +8,8 @@ const app = express();
 app.use(express.json());
 app.use('/pets', petsRouter);
 
-const server = app.listen(3000, () => console.log('Listening on port 3000'));
-
-let shuttingDown = false;
-
-function finish(code) {
-  try {
-    saveConfig();
-    console.log('Config saved');
-  } catch (err) {
-    console.error('Failed to save config:', err);
-    code = 1;
-  }
-  process.exit(code);
-}
-
-function shutdown(signal) {
-  if (shuttingDown) return;
-  shuttingDown = true;
-  console.log(`${signal} received, shutting down...`);
-
-  server.close(() => finish(0));
-
-  setTimeout(() => finish(1), 5000).unref();
-}
-
-process.on('SIGINT', () => shutdown('SIGINT'));
-process.on('SIGTERM', () => shutdown('SIGTERM'));
-app.use(express.json());
-
 app.set("views", join(__dirname, "views"));
 app.set("view engine", "pug");
-
 
 
 function checkRoute(req, res, next) {
@@ -108,5 +78,38 @@ app.get('/:route/:id', checkRoute, (req, res) => {
   res.json(record);
 });
 
-process.on('SIGINT', shutdown);
-process.on('SIGTERM', shutdown);
+function start(port = 3000) {
+  const server = app.listen(port, () => console.log(`Listening on port ${port}`));
+  let shuttingDown = false;
+
+  function finish(code) {
+    try {
+      saveConfig();
+      console.log('Config saved');
+    } catch (err) {
+      console.error('Failed to save config:', err);
+      code = 1;
+    }
+    process.exit(code);
+  }
+
+  function shutdown(signal) {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    console.log(`${signal} received, shutting down...`);
+
+    server.close(() => finish(0));
+    setTimeout(() => finish(1), 5000).unref();
+  }
+
+  process.on('SIGINT', () => shutdown('SIGINT'));
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+
+  return server;
+}
+
+if (require.main === module) {
+  start();
+}
+
+module.exports = app;
